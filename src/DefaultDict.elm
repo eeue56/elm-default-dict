@@ -36,6 +36,14 @@ equality with `(==)` is unreliable and should not be used.
 
 -}
 
+-- This is a hack
+-- As DefaultDict uses types with the same names as those used
+-- internally by Elm-Core's Dict, when the runtime tries to
+-- shortcut and pretty-print the Dict (as the ctor of the
+-- objects match), it will cause an error if Dict has not been
+-- imported at least somewhere in the program.
+-- So, we import it here - and get prettyprinting for free!
+import Dict as DeadDict
 
 import Basics exposing (..)
 import Maybe exposing (..)
