@@ -2,7 +2,7 @@ module DefaultDict
     ( DefaultDict
     , empty, singleton, insert, update
     , isEmpty, get, remove, member
-    , size
+    , eq, size
     , filter
     , partition
     , foldl, foldr, map
@@ -91,6 +91,12 @@ type DefaultDict k v
 empty : v -> DefaultDict comparable v
 empty default =
     RBEmpty LBlack default
+
+
+{-| Element eqs -}
+eq : DefaultDict comparable v -> DefaultDict comparable v -> Bool
+eq first second =
+    (toList first) == (toList second)
 
 
 min : DefaultDict k v -> (k,v)

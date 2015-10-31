@@ -69,22 +69,48 @@ tests =
 
         queryTests =
             suite "query Tests"
-                [ test "member 1" <| assertEqual True (Dict.member "Tom" animals)
+                [ test "element equality" <| assert (Dict.eq animals animals)
+                , test "member 1" <| assertEqual True (Dict.member "Tom" animals)
                 , test "member 2" <| assertEqual False (Dict.member "Spike" animals)
                 , test "get 1" <| assertEqual ("cat") (Dict.get "Tom" animals)
                 , test "get 2" <| assertEqual "animal" (Dict.get "Spike" animals)
                 ]
         combineTests =
             suite "combine Tests"
-                [ test "union" <| assertEqual animals (Dict.union (Dict.singleton "Jerry" "mouse") (Dict.singleton "Tom" "cat"))
-                , test "union collison" <| assertEqual (Dict.singleton "Tom" "cat") (Dict.union (Dict.singleton "Tom" "cat") (Dict.singleton "Tom" "mouse"))
-                , test "intersect" <| assertEqual (Dict.singleton "Tom" "cat") (Dict.intersect animals (Dict.singleton "Tom" "cat"))
-                , test "diff" <| assertEqual (Dict.singleton "Jerry" "mouse") (Dict.diff animals (Dict.singleton "Tom" "cat"))
+                [ test "union"
+                    <| assert
+                    <| Dict.eq animals
+                    <| Dict.union (Dict.singleton "Jerry" "mouse")
+                    <| Dict.singleton "Tom" "cat"
+
+                , test "union collison"
+                    <| assert
+                    <| Dict.eq (Dict.singleton "Tom" "cat")
+                    <| Dict.union (Dict.singleton "Tom" "cat")
+                    <| Dict.singleton "Tom" "mouse"
+
+                , test "intersect"
+                    <| assert
+                    <| Dict.eq (Dict.singleton "Tom" "cat")
+                    <| (Dict.intersect animals (Dict.singleton "Tom" "cat"))
+                , test "diff"
+                    <| assert
+                    <| Dict.eq (Dict.singleton "Jerry" "mouse")
+                    <| (Dict.diff animals (Dict.singleton "Tom" "cat"))
                 ]
         transformTests =
             suite "transform Tests"
-                [ test "filter" <| assertEqual (Dict.singleton "Tom" "cat") (Dict.filter (\k v -> k == "Tom") animals)
-                , test "partition" <| assertEqual (Dict.singleton "Tom" "cat", Dict.singleton "Jerry" "mouse") (Dict.partition (\k v -> k == "Tom") animals)
+                [ test "filter"
+                    <| assert
+                    <| Dict.eq (Dict.singleton "Tom" "cat")
+                    <| Dict.filter (\k v -> k == "Tom") animals
+                , test "partition"
+                    <| assertEqual (True, True)
+                    <| (\(l, r) ->
+                        ( Dict.eq (Dict.singleton "Tom" "cat") l
+                        , Dict.eq (Dict.singleton "Jerry" "mouse") r)
+                       )
+                    <| Dict.partition (\k v -> k == "Tom") animals
                 ]
   in
     suite "Dict Tests"
