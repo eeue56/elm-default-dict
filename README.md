@@ -30,3 +30,15 @@ everyonesAges =
 leesAge =
     DefaultDict.get "Lee" everyonesAges
 ```
+
+
+## When should I use this?
+
+Whenever you want a dictionary to have a default value. The implementation is roughly
+70% identical to core's Dict, meaning that the API mirrors it exactly.
+
+The increased size overhead is `4 * size of v`. v is stored on each of the `RBEmpty` leafs.
+
+## Interesting notes
+
+Due to the way that `toString` works internally, our `DefaultDict` can get pretty printing for free by using the same types used to implement `Dict`.
