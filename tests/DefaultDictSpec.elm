@@ -70,6 +70,25 @@ tests =
         queryTests =
             suite "query Tests"
                 [ test "element equality" <| assert (Dict.eq animals animals)
+                , test "false element equality"
+                    <| assert
+                    <| not
+                    <| Dict.eq animals
+                    <| Dict.singleton "k" "v"
+
+                , test "full equality" <| assert (Dict.fullEq animals animals)
+                , test "false full equality"
+                    <| assert
+                    <| not
+                    <| Dict.fullEq animals
+                    <| Dict.fromList
+                        "bobby"
+                        [ ("Tom", "cat")
+                        , ("Jerry", "mouse") ]
+
+                , test "size" <| assertEqual 2 <| Dict.size animals
+                , test "get base" <| assertEqual "animal" <| Dict.getBase animals
+
                 , test "member 1" <| assertEqual True (Dict.member "Tom" animals)
                 , test "member 2" <| assertEqual False (Dict.member "Spike" animals)
                 , test "get 1" <| assertEqual ("cat") (Dict.get "Tom" animals)

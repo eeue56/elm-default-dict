@@ -1,8 +1,8 @@
 module DefaultDict
     ( DefaultDict
     , empty, singleton, insert, update
-    , isEmpty, get, remove, member
-    , eq, size
+    , get, remove, member, getBase
+    , eq, fullEq, size, isEmpty
     , filter
     , partition
     , foldl, foldr, map
@@ -23,7 +23,7 @@ equality with `(==)` is unreliable and should not be used.
 @docs empty, singleton, insert, update, remove
 
 # Query
-@docs isEmpty, member, get, size
+@docs isEmpty, member, get, size, getBase, eq, fullEq
 
 # Combine
 @docs union, intersect, diff
@@ -93,11 +93,15 @@ empty default =
     RBEmpty LBlack default
 
 
-{-| Element eqs -}
+{-| Element equality. Does not check equality of base -}
 eq : DefaultDict comparable v -> DefaultDict comparable v -> Bool
 eq first second =
     (toList first) == (toList second)
 
+{-| Base + element equality -}
+fullEq : DefaultDict comparable v -> DefaultDict comparable v -> Bool
+fullEq first second =
+    (toList first == toList second) && (getBase first == getBase second)
 
 min : DefaultDict k v -> (k,v)
 min dict =
