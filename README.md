@@ -17,4 +17,16 @@ mikesAge =
 -- equal to 0
 someoneElse =
     DefaultDict.get "David" ages
+
+everyonesAges : DefaultDict String Int
+everyonesAges =
+    DefaultDict.fromList
+        100
+        [ ("Mike", 5)
+        , ("David", 0)
+        , ("Tommy", 19)]
+
+-- equal to 100
+leesAge =
+    DefaultDict.get "Lee" everyonesAges
 ```

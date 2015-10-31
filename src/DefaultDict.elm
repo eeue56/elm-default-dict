@@ -2,6 +2,7 @@ module DefaultDict
     ( DefaultDict
     , empty, singleton, insert, update
     , isEmpty, get, remove, member
+    , size
     , filter
     , partition
     , foldl, foldr, map
@@ -22,7 +23,7 @@ equality with `(==)` is unreliable and should not be used.
 @docs empty, singleton, insert, update, remove
 
 # Query
-@docs isEmpty, member, get
+@docs isEmpty, member, get, size
 
 # Combine
 @docs union, intersect, diff
@@ -80,7 +81,8 @@ type DefaultDict k v
 
 {-| Create an empty dictionary with a given default value -}
 empty : v -> DefaultDict comparable v
-empty default = RBEmpty LBlack default
+empty default =
+    RBEmpty LBlack default
 
 
 min : DefaultDict k v -> (k,v)
@@ -95,7 +97,6 @@ min dict =
       RBEmpty LBlack v ->
           Debug.crash "(min Empty) is not defined"
 
-
 max : DefaultDict k v -> (k, v)
 max dict =
     case dict of
@@ -107,19 +108,6 @@ max dict =
 
       RBEmpty _ _ ->
           Debug.crash "(max Empty) is not defined"
-
-
-{-| Get the value associated with a key. If the key is not found, return
-`Nothing`. This is useful when you are not sure if a key will be in the
-dictionary.
-
-    animals = fromList [ ("Tom", Cat), ("Jerry", Mouse) ]
-
-    get "Tom"   animals == Just Cat
-    get "Mouse" animals == Just Mouse
-    get "Spike" animals == Nothing
-
--}
 
 get' : comparable -> DefaultDict comparable v -> Maybe v
 get' targetKey dict =
@@ -133,8 +121,8 @@ get' targetKey dict =
             EQ -> Just value
             GT -> get' targetKey right
 
-
-
+{-| Helper function for grabbing the default value used in the dict
+-}
 getBase : DefaultDict comparable v -> v
 getBase dict =
     case dict of
@@ -180,6 +168,19 @@ isEmpty dict =
       RBEmpty _ _ -> True
       _ -> False
 
+{-| Get the number of key-value pairs in a dict -}
+size : DefaultDict k v -> Int
+size dict =
+  sizeHelp 0 dict
+
+sizeHelp : Int -> DefaultDict k v -> Int
+sizeHelp n dict =
+  case dict of
+    RBEmpty _ _ ->
+      n
+
+    RBNode _ _ _ left right ->
+      sizeHelp (sizeHelp (n+1) right) left
 
 ensureBlackRoot : DefaultDict k v -> DefaultDict k v
 ensureBlackRoot dict =
@@ -218,7 +219,7 @@ showFlag f = case f of
 
 
 {-| Update the value of a dictionary for a specific key with a given function. -}
-update : comparable -> (Maybe v -> Maybe v) -> DefaultDict comparable v -> DefaultDict comparable v
+update : comparable -> (v -> Maybe v) -> DefaultDict comparable v -> DefaultDict comparable v
 update k alter dict =
   let
 
@@ -229,14 +230,14 @@ update k alter dict =
       up dict =
           case dict of
             RBEmpty LBlack v ->
-                case alter Nothing of
+                case alter base of
                   Nothing -> (Same, empty')
                   Just v  -> (Insert, RBNode Red k v empty' empty')
 
             RBNode clr key value left right ->
                 case compare k key of
                   EQ ->
-                    case alter (Just value) of
+                    case alter value of
                       Nothing -> (Remove, rem clr left right)
                       Just newValue ->
                           (Same, RBNode clr key newValue left right)
@@ -498,7 +499,9 @@ toList dict =
     foldr (\key value list -> (key, value) :: list) [] dict
 
 
-{-| Convert an association list into a dictionary. -}
+{-| Convert an association list into a dictionary.
+Takes a default value, and a list of key-pair tuples
+ -}
 fromList : v -> List (comparable, v) -> DefaultDict comparable v
 fromList default assocs =
     List.foldl (\(key,value) dict -> insert key value dict) (empty default) assocs

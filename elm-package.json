@@ -1,7 +1,7 @@
 {
     "version": "1.0.0",
     "summary": "A default dict implementation in elm",
-    "repository": "https://github.com/eeue56/elm-default-dict",
+    "repository": "https://github.com/eeue56/elm-default-dict.git",
     "license": "BSD3",
     "source-directories": [
         "src/"
