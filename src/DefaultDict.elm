@@ -1,11 +1,11 @@
 module DefaultDict
     ( DefaultDict
     , empty, singleton, insert, update
-    , get, remove, member, getBase
+    , get, remove, member, getDefault
     , eq, fullEq, size, isEmpty
     , filter
     , partition
-    , foldl, foldr, map
+    , foldl, foldr, map, mapWithDefault
     , union, intersect, diff
     , keys, values
     , toList, fromList
@@ -19,11 +19,14 @@ lists of comparable types.
 Insert, remove, and query operations all take *O(log n)* time. DefaultDictionary
 equality with `(==)` is unreliable and should not be used.
 
+# Types
+@docs DefaultDict
+
 # Build
 @docs empty, singleton, insert, update, remove
 
 # Query
-@docs isEmpty, member, get, size, getBase, eq, fullEq
+@docs isEmpty, member, get, size, getDefault, eq, fullEq
 
 # Combine
 @docs union, intersect, diff
@@ -32,7 +35,7 @@ equality with `(==)` is unreliable and should not be used.
 @docs keys, values, toList, fromList
 
 # Transform
-@docs map, foldl, foldr, filter, partition
+@docs map, mapWithDefault, foldl, foldr, filter, partition
 
 -}
 
@@ -81,7 +84,7 @@ showLColor color =
       LBlack  -> "LBlack"
       LBBlack -> "LBBlack"
 
-
+{-| A default dict which lifts the type from Core's Dict-}
 type DefaultDict k v
     = RBNode NColor k v (DefaultDict k v) (DefaultDict k v)
     | RBEmpty LeafColor v
@@ -101,7 +104,7 @@ eq first second =
 {-| Base + element equality -}
 fullEq : DefaultDict comparable v -> DefaultDict comparable v -> Bool
 fullEq first second =
-    (toList first == toList second) && (getBase first == getBase second)
+    (toList first == toList second) && (getDefault first == getDefault second)
 
 min : DefaultDict k v -> (k,v)
 min dict =
@@ -141,13 +144,14 @@ get' targetKey dict =
 
 {-| Helper function for grabbing the default value used in the dict
 -}
-getBase : DefaultDict comparable v -> v
-getBase dict =
+getDefault : DefaultDict comparable v -> v
+getDefault dict =
     case dict of
       RBEmpty LBlack v ->
         v
       RBNode _ _ _ left _ ->
-        getBase left
+        getDefault left
+
 
 {-| Get the value associated with a key. If the key is not found, return
 `Nothing`. This is useful when you are not sure if a key will be in the
@@ -165,7 +169,7 @@ get targetKey dict =
     case get' targetKey dict of
       Just v -> v
       Nothing ->
-        getBase dict
+        getDefault dict
 
 
 {-| Determine if a key is in a dictionary. -}
@@ -242,7 +246,7 @@ update k alter dict =
   let
 
       base =
-          getBase dict
+          getDefault dict
       empty' =
           empty base
       up dict =
@@ -445,15 +449,32 @@ redden t =
       RBNode _ k v l r -> RBNode Red k v l r
 
 
-{-| Apply a function to all values in a dictionary. -}
-map : b -> (comparable -> a -> b) -> DefaultDict comparable a -> DefaultDict comparable b
-map default f dict =
+{-| Apply a function to all values in a dictionary.
+Notice that this function takes a function of type `comparable -> a -> a`,
+rather than Dict's `comparable a -> b`. If you want to provide a new default,
+see mapWithDefault -}
+map : (comparable -> a -> a) -> DefaultDict comparable a -> DefaultDict comparable a
+map f dict =
+    case dict of
+      RBEmpty LBlack v ->
+          dict
+
+      RBNode clr key value left right ->
+          RBNode clr key (f key value) (map f left) (map f right)
+
+{-| Like map, but allows you to provide a default value too.
+When mapping from type `a` to type `b`, the old default of
+type `a` won't work as it's not possible to have `DefaultDict compareable (a|b)`
+If this is what you want, use an `Either` type instead.
+-}
+mapWithDefault : b -> (comparable -> a -> b) -> DefaultDict comparable a -> DefaultDict comparable b
+mapWithDefault default f dict =
     case dict of
       RBEmpty LBlack v ->
           RBEmpty LBlack default
 
       RBNode clr key value left right ->
-          RBNode clr key (f key value) (map default f left) (map default f right)
+          RBNode clr key (f key value) (mapWithDefault default f left) (mapWithDefault default f right)
 
 
 {-| Fold over the key-value pairs in a dictionary, in order from lowest
@@ -533,7 +554,7 @@ filter predicate dictionary =
                 then insert key value dict
                 else dict
     in
-        foldl add (empty (getBase dictionary)) dictionary
+        foldl add (empty (getDefault dictionary)) dictionary
 
 
 {-| Partition a dictionary according to a predicate. The first dictionary
@@ -547,6 +568,6 @@ partition predicate dict =
                 then (insert key value t1, t2)
                 else (t1, insert key value t2)
         base =
-          getBase dict
+          getDefault dict
     in
         foldl add (empty base, empty base) dict

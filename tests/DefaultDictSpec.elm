@@ -15,6 +15,14 @@ animals =
         [ ("Tom", "cat")
         , ("Jerry", "mouse") ]
 
+ages : Dict.DefaultDict String Int
+ages =
+    Dict.fromList
+        100
+        [ ("Mike", 5)
+        , ("David", 0)
+        , ("Tommy", 19)]
+
 tests : Test
 tests =
     let
@@ -87,7 +95,7 @@ tests =
                         , ("Jerry", "mouse") ]
 
                 , test "size" <| assertEqual 2 <| Dict.size animals
-                , test "get base" <| assertEqual "animal" <| Dict.getBase animals
+                , test "get base" <| assertEqual "animal" <| Dict.getDefault animals
 
                 , test "member 1" <| assertEqual True (Dict.member "Tom" animals)
                 , test "member 2" <| assertEqual False (Dict.member "Spike" animals)
@@ -130,6 +138,30 @@ tests =
                         , Dict.eq (Dict.singleton "Jerry" "mouse") r)
                        )
                     <| Dict.partition (\k v -> k == "Tom") animals
+
+                , test "map"
+                    <| assert
+                    <| Dict.fullEq (
+                        Dict.fromList
+                            100
+                            [ ("Mike", 6)
+                            , ("David", 1)
+                            , ("Tommy", 20)]
+                        )
+                    <| Dict.map (\name age -> age + 1)
+                    <| ages
+
+                , test "mapWithDefault"
+                    <| assert
+                    <| Dict.fullEq (
+                        Dict.fromList
+                            "name"
+                            [ ("Mike", "Mike")
+                            , ("David", "David")
+                            , ("Tommy", "Tommy")]
+                        )
+                    <| Dict.mapWithDefault "name" (\name _ -> name)
+                    <| ages
                 ]
   in
     suite "Dict Tests"
