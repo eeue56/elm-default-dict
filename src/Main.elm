@@ -30,4 +30,4 @@ magic = DefaultDict.get 1 default
 
 --main = show <| DefaultDict.toList <| DefaultDict.update "Mike" (\age -> Just (age - 1)) everyonesAges
 
-main = show <| everyonesAges
+main = show <| show

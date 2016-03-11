@@ -42,3 +42,4 @@ The increased size overhead is `4 * size of v`. v is stored on each of the `RBEm
 ## Interesting notes
 
 Due to the way that `toString` works internally, our `DefaultDict` can get pretty printing for free by using the same types used to implement `Dict`.
+
