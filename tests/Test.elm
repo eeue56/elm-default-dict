@@ -1,11 +1,6 @@
-module Test where
+module Test exposing (..)
 
-import Graphics.Element exposing (..)
-import ElmTest.Run as Run
-import ElmTest.Runner.Element as ElementRunner
-import ElmTest.Runner.String  as StringRunner
-import ElmTest.Test exposing (..)
-import ElmTest.Assertion exposing (..)
+import ElmTest exposing (suite, runSuite, Test)
 
 import DefaultDictSpec as Dict
 
@@ -16,9 +11,5 @@ tests =
     ]
 
 
-results : String
-results = StringRunner.runDisplay tests
-
-
-main = ElementRunner.runDisplay tests
+main = runSuite tests
 

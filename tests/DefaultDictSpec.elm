@@ -1,12 +1,9 @@
-module DefaultDictSpec (tests) where
+module DefaultDictSpec exposing (tests)
 
-import Basics exposing (..)
 import DefaultDict as Dict
-import List
 import Maybe exposing (..)
 
-import ElmTest.Assertion exposing (..)
-import ElmTest.Test exposing (..)
+import ElmTest exposing (..)
 
 animals : Dict.DefaultDict String String
 animals =

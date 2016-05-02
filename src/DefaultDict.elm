@@ -1,4 +1,4 @@
-module DefaultDict
+module DefaultDict exposing
     ( DefaultDict
     , empty, singleton, insert, update
     , get, remove, member, getDefault
@@ -9,7 +9,7 @@ module DefaultDict
     , union, intersect, diff
     , keys, values
     , toList, fromList
-    ) where
+    ) -- where
 
 {-| A dictionary mapping unique keys to values. A provided default is used for when
 keys are missing. The keys can be any comparable
@@ -48,7 +48,6 @@ equality with `(==)` is unreliable and should not be used.
 -- So, we import it here - and get prettyprinting for free!
 import Dict as DeadDict
 
-import Basics exposing (..)
 import Maybe exposing (..)
 import List exposing (..)
 import Debug
