@@ -1,5 +1,5 @@
 {
-    "version": "2.0.1",
+    "version": "2.0.2",
     "summary": "A default dict implementation in elm",
     "repository": "https://github.com/eeue56/elm-default-dict.git",
     "license": "BSD3",
