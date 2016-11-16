@@ -2,168 +2,204 @@ module DefaultDictSpec exposing (tests)
 
 import DefaultDict as Dict
 import Maybe exposing (..)
+import Test exposing (..)
+import Expect
 
-import ElmTest exposing (..)
 
 animals : Dict.DefaultDict String String
 animals =
     Dict.fromList
         "animal"
-        [ ("Tom", "cat")
-        , ("Jerry", "mouse") ]
+        [ ( "Tom", "cat" )
+        , ( "Jerry", "mouse" )
+        ]
+
 
 ages : Dict.DefaultDict String Int
 ages =
     Dict.fromList
         100
-        [ ("Mike", 5)
-        , ("David", 0)
-        , ("Tommy", 19)]
+        [ ( "Mike", 5 )
+        , ( "David", 0 )
+        , ( "Tommy", 19 )
+        ]
+
 
 tests : Test
 tests =
     let
         buildTests =
             let
-                defaultKV = Dict.fromList "v" [("k", "v")]
+                defaultKV =
+                    Dict.fromList "v" [ ( "k", "v" ) ]
             in
-                suite "build Tests"
-                    [ test "empty"
-                        <| assert
-                        <| Dict.isEmpty
-                        <| Dict.fromList "v" []
-
-                    , test "singleton"
-                        <| assertEqual defaultKV
-                        <| Dict.singleton "k" "v"
-
-                    , test "insert"
-                        <| assertEqual defaultKV
-                        <| Dict.insert "k" "v"
-                        <| Dict.empty "v"
-
-                    , test "insert replace"
-                        <| assertEqual "vv"
-                        <| Dict.get "k"
-                        <| Dict.insert "k" "vv"
-                        <| Dict.singleton "k" "v"
-
-                    , test "update"
-                        <| assertEqual "vv"
-                        <| Dict.get "k"
-                        <| Dict.update "k" (\v-> Just "vv")
-                        <| Dict.singleton "k" "v"
-
-                    , test "update Nothing"
-                        <| assert
-                        <| Dict.isEmpty
-                        <| Dict.update "k" (\v -> Nothing)
-                        <| Dict.singleton "k" "v"
-
-                    , test "remove"
-                        <| assert
-                        <| Dict.isEmpty
-                        <| Dict.remove "k"
-                        <| Dict.singleton "k" "v"
-
-                    , test "remove not found"
-                        <| assertEqual (Dict.singleton "k" "v")
-                        <| Dict.remove "kk"
-                        <| Dict.singleton "k" "v"
+                describe "build Tests"
+                    [ test "empty" <|
+                        \() ->
+                            Dict.fromList "v" []
+                                |> Dict.isEmpty
+                                |> Expect.true "is empty"
+                    , test "singleton" <|
+                        \() ->
+                            Dict.singleton "k" "v"
+                                |> Expect.equal defaultKV
+                    , test "insert" <|
+                        \() ->
+                            Dict.empty "v"
+                                |> Dict.insert "k" "v"
+                                |> Expect.equal defaultKV
+                    , test "insert replace" <|
+                        \() ->
+                            Dict.singleton "k" "v"
+                                |> Dict.insert "k" "vv"
+                                |> Dict.get "k"
+                                |> Expect.equal "vv"
+                    , test "update" <|
+                        \() ->
+                            Dict.singleton "k" "v"
+                                |> Dict.update "k" (\v -> Just "vv")
+                                |> Dict.get "k"
+                                |> Expect.equal "vv"
+                    , test "update Nothing" <|
+                        \() ->
+                            Dict.singleton "k" "v"
+                                |> Dict.update "k" (\v -> Nothing)
+                                |> Dict.isEmpty
+                                |> Expect.true "dict is empty"
+                    , test "remove" <|
+                        \() ->
+                            Dict.singleton "k" "v"
+                                |> Dict.remove "k"
+                                |> Dict.isEmpty
+                                |> Expect.true "dict is empty"
+                    , test "remove not found" <|
+                        \() ->
+                            Dict.singleton "k" "v"
+                                |> Dict.remove "kk"
+                                |> Expect.equal (Dict.singleton "k" "v")
                     ]
 
         queryTests =
-            suite "query Tests"
-                [ test "element equality" <| assert (Dict.eq animals animals)
-                , test "false element equality"
-                    <| assert
-                    <| not
-                    <| Dict.eq animals
-                    <| Dict.singleton "k" "v"
-
-                , test "full equality" <| assert (Dict.fullEq animals animals)
-                , test "false full equality"
-                    <| assert
-                    <| not
-                    <| Dict.fullEq animals
-                    <| Dict.fromList
-                        "bobby"
-                        [ ("Tom", "cat")
-                        , ("Jerry", "mouse") ]
-
-                , test "size" <| assertEqual 2 <| Dict.size animals
-                , test "get base" <| assertEqual "animal" <| Dict.getDefault animals
-
-                , test "member 1" <| assertEqual True (Dict.member "Tom" animals)
-                , test "member 2" <| assertEqual False (Dict.member "Spike" animals)
-                , test "get 1" <| assertEqual ("cat") (Dict.get "Tom" animals)
-                , test "get 2" <| assertEqual "animal" (Dict.get "Spike" animals)
+            describe "query Tests"
+                [ test "element equality" <|
+                    \() ->
+                        (Dict.eq animals animals)
+                            |> Expect.true "dicts with same elements are equal"
+                , test "false element equality" <|
+                    \() ->
+                        Dict.singleton "k" "v"
+                            |> Dict.eq animals
+                            |> Expect.false "dicts with different elements are not equal"
+                , test "full equality" <|
+                    \() ->
+                        Dict.fullEq animals animals
+                            |> Expect.true "dicts with same elements and base are equal"
+                , test "false full equality" <|
+                    \() ->
+                        Dict.fromList
+                            "bobby"
+                            [ ( "Tom", "cat" )
+                            , ( "Jerry", "mouse" )
+                            ]
+                            |> Dict.fullEq animals
+                            |> Expect.false "dicts with same elements but different base are not equal"
+                , test "size" <|
+                    \() ->
+                        Dict.size animals
+                            |> Expect.equal 2
+                , test "get base" <|
+                    \() ->
+                        Dict.getDefault animals
+                            |> Expect.equal "animal"
+                , test "member 1" <|
+                    \() ->
+                        Dict.member "Tom" animals
+                            |> Expect.equal True
+                , test "member 2" <|
+                    \() ->
+                        Dict.member "Spike" animals
+                            |> Expect.equal False
+                , test "get 1" <|
+                    \() ->
+                        Dict.get "Tom" animals
+                            |> Expect.equal ("cat")
+                , test "get 2" <|
+                    \() ->
+                        Dict.get "Spike" animals
+                            |> Expect.equal "animal"
                 ]
+
         combineTests =
-            suite "combine Tests"
-                [ test "union"
-                    <| assert
-                    <| Dict.eq animals
-                    <| Dict.union (Dict.singleton "Jerry" "mouse")
-                    <| Dict.singleton "Tom" "cat"
-
-                , test "union collison"
-                    <| assert
-                    <| Dict.eq (Dict.singleton "Tom" "cat")
-                    <| Dict.union (Dict.singleton "Tom" "cat")
-                    <| Dict.singleton "Tom" "mouse"
-
-                , test "intersect"
-                    <| assert
-                    <| Dict.eq (Dict.singleton "Tom" "cat")
-                    <| (Dict.intersect animals (Dict.singleton "Tom" "cat"))
-                , test "diff"
-                    <| assert
-                    <| Dict.eq (Dict.singleton "Jerry" "mouse")
-                    <| (Dict.diff animals (Dict.singleton "Tom" "cat"))
+            describe "combine Tests"
+                [ test "union" <|
+                    \() ->
+                        Dict.singleton "Tom" "cat"
+                            |> Dict.union (Dict.singleton "Jerry" "mouse")
+                            |> Dict.eq animals
+                            |> Expect.true "includes all elements from both dicts"
+                , test "union collison" <|
+                    \() ->
+                        Dict.singleton "Tom" "mouse"
+                            |> Dict.union (Dict.singleton "Tom" "cat")
+                            |> Dict.eq (Dict.singleton "Tom" "cat")
+                            |> Expect.true "precedence given to left dict"
+                , test "intersect" <|
+                    \() ->
+                        Dict.intersect animals (Dict.singleton "Tom" "cat")
+                            |> Dict.eq (Dict.singleton "Tom" "cat")
+                            |> Expect.true "only includes elements present in both dicts"
+                , test "diff" <|
+                    \() ->
+                        Dict.diff animals (Dict.singleton "Tom" "cat")
+                            |> Dict.eq (Dict.singleton "Jerry" "mouse")
+                            |> Expect.true "only includes elements not present in right dict"
                 ]
+
         transformTests =
-            suite "transform Tests"
-                [ test "filter"
-                    <| assert
-                    <| Dict.eq (Dict.singleton "Tom" "cat")
-                    <| Dict.filter (\k v -> k == "Tom") animals
-                , test "partition"
-                    <| assertEqual (True, True)
-                    <| (\(l, r) ->
-                        ( Dict.eq (Dict.singleton "Tom" "cat") l
-                        , Dict.eq (Dict.singleton "Jerry" "mouse") r)
-                       )
-                    <| Dict.partition (\k v -> k == "Tom") animals
-
-                , test "map"
-                    <| assert
-                    <| Dict.fullEq (
-                        Dict.fromList
-                            100
-                            [ ("Mike", 6)
-                            , ("David", 1)
-                            , ("Tommy", 20)]
-                        )
-                    <| Dict.map (\name age -> age + 1)
-                    <| ages
-
-                , test "mapWithDefault"
-                    <| assert
-                    <| Dict.fullEq (
-                        Dict.fromList
-                            "name"
-                            [ ("Mike", "Mike")
-                            , ("David", "David")
-                            , ("Tommy", "Tommy")]
-                        )
-                    <| Dict.mapWithDefault "name" (\name _ -> name)
-                    <| ages
+            describe "transform Tests"
+                [ test "filter" <|
+                    \() ->
+                        Dict.filter (\k v -> k == "Tom") animals
+                            |> Dict.eq (Dict.singleton "Tom" "cat")
+                            |> Expect.true "retains elements matching predicate"
+                , test "partition" <|
+                    \() ->
+                        Dict.partition (\k v -> k == "Tom") animals
+                            |> (\( l, r ) ->
+                                    ( Dict.eq (Dict.singleton "Tom" "cat") l
+                                    , Dict.eq (Dict.singleton "Jerry" "mouse") r
+                                    )
+                               )
+                            |> Expect.equal ( True, True )
+                , test "map" <|
+                    \() ->
+                        Dict.fullEq
+                            (Dict.map (\name age -> age + 1) ages)
+                            (Dict.fromList
+                                100
+                                [ ( "Mike", 6 )
+                                , ( "David", 1 )
+                                , ( "Tommy", 20 )
+                                ]
+                            )
+                            |> Expect.true "applies a function to each element in dict"
+                , test "mapWithDefault" <|
+                    \() ->
+                        Dict.fullEq
+                            (Dict.mapWithDefault "name" (\name _ -> name) ages)
+                            (Dict.fromList
+                                "name"
+                                [ ( "Mike", "Mike" )
+                                , ( "David", "David" )
+                                , ( "Tommy", "Tommy" )
+                                ]
+                            )
+                            |> Expect.true "boom"
                 ]
-  in
-    suite "Dict Tests"
-    [ buildTests
-    , queryTests
-    , combineTests
-    , transformTests
-    ]
+    in
+        describe "Dict Tests"
+            [ buildTests
+            , queryTests
+            , combineTests
+            , transformTests
+            ]
